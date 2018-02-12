@@ -15,6 +15,11 @@ import config
 
 POCKET_API_ENDPOINT = 'https://getpocket.com/v3'
 
+tz = timezone('Asia/Tokyo')
+
+d = datetime.datetime.now(tz=tz) + datetime.timedelta(days=-1)
+yesterday = d.replace(hour=0, minute=0, second=0, microsecond=0)
+
 
 class SlackPostThread(threading.Thread):
 
@@ -46,12 +51,8 @@ def get_last_pocket_post():
     :return: json
     """
 
-    tz = timezone('Asia/Tokyo')
-
     # 前日のunixtime
-    d = datetime.datetime.now(tz=tz) + datetime.timedelta(days=-1)
-    d = d.replace(hour=0, minute=0, second=0, microsecond=0)
-    unixtime = int(time.mktime(d.utctimetuple()))
+    unixtime = int(time.mktime(yesterday.utctimetuple()))
 
     payload = {'consumer_key': config.consumer_key,
                'access_token': config.access_token,
@@ -78,6 +79,11 @@ class PostSlackHandler(webapp2.RequestHandler):
             return
 
         for article in json_obj.values():
+            # 追加日
+            add_time = datetime.datetime.fromtimestamp(float(article.get('time_added')), tz)
+            # 前日登録分だけにする
+            if (add_time - yesterday).days > 0:
+                continue
             id = article.get('item_id')
             title = article.get('resolved_title') if article.get('resolved_title', '') != '' else article.get('given_title')
             if title is not None:
