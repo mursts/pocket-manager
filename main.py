@@ -23,14 +23,14 @@ yesterday = d.replace(hour=0, minute=0, second=0, microsecond=0)
 
 class SlackPostThread(threading.Thread):
 
-    def __init__(self, id, title, url):
+    def __init__(self, item_id, title, url):
         super(SlackPostThread, self).__init__()
-        self.id = id
+        self.item_id = item_id
         self.title = title
         self.url = url
 
     def run(self):
-        payload = {"text": '- {} ({})\n    {}\n\n'.format(self.title, self.id, self.url)}
+        payload = {"text": '- {} ({})\n    {}\n\n'.format(self.title, self.item_id, self.url)}
 
         r = urlfetch.fetch(config.post_url,
                            payload=json.dumps(payload),
@@ -84,7 +84,7 @@ class PostSlackHandler(webapp2.RequestHandler):
             # 前日登録分だけにする
             if (add_time - yesterday).days > 0:
                 continue
-            id = article.get('item_id')
+            item_id = article.get('item_id')
             title = article.get('resolved_title') if article.get('resolved_title', '') != '' else article.get('given_title')
             if title is not None:
                 title = title.encode('utf-8')
@@ -92,7 +92,7 @@ class PostSlackHandler(webapp2.RequestHandler):
                 title = ''
             url = article.get('resolved_url') if article.get('resolved_url', '') != '' else article.get('given_url')
 
-            t = SlackPostThread(id, title, url)
+            t = SlackPostThread(item_id, title, url)
             t.start()
 
 
