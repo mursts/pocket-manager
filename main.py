@@ -18,7 +18,7 @@ POCKET_API_ENDPOINT = 'https://getpocket.com/v3'
 tz = timezone('Asia/Tokyo')
 
 d = datetime.datetime.now(tz=tz) + datetime.timedelta(days=-1)
-yesterday = d.replace(hour=0, minute=0, second=0, microsecond=0)
+yesterday = d.replace(hour=23, minute=59, second=59, microsecond=0)
 
 
 class SlackPostThread(threading.Thread):
@@ -80,9 +80,9 @@ class PostSlackHandler(webapp2.RequestHandler):
 
         for article in json_obj.values():
             # 追加日
-            add_time = datetime.datetime.fromtimestamp(float(article.get('time_added')), tz)
+            added_time = datetime.datetime.fromtimestamp(float(article.get('time_added')), tz)
             # 前日登録分だけにする
-            if (add_time - yesterday).days > 0:
+            if (added_time - yesterday).days > 0:
                 continue
             item_id = article.get('item_id')
             title = article.get('resolved_title') if article.get('resolved_title', '') != '' else article.get('given_title')
