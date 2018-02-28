@@ -18,7 +18,7 @@ POCKET_API_ENDPOINT = 'https://getpocket.com/v3'
 tz = timezone('Asia/Tokyo')
 
 d = datetime.datetime.now(tz=tz) + datetime.timedelta(days=-1)
-yesterday = d.replace(hour=23, minute=59, second=59, microsecond=0)
+yesterday = d.replace(hour=0, minute=0, second=0, microsecond=0)
 
 
 class SlackPostThread(threading.Thread):
