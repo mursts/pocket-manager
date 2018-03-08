@@ -1,5 +1,0 @@
-cron:
-- description: last stock article
-  url: /post
-  schedule: every day 8:30
-  timezone: Asia/Tokyo
