@@ -1,0 +1,5 @@
+cron:
+- description: post article
+  url: /post
+  schedule: every day 8:30
+  timezone: Asia/Tokyo
