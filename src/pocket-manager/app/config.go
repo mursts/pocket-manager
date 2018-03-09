@@ -11,9 +11,7 @@ type Config struct {
 		AccessToken string `json:"accessToken"`
 	} `json:"pocket"`
 	Slack struct {
-		Token     string `json:"token"`
-		ChannelId string `json:"channelId"`
-		PostUrl   string `json:"postUrl"`
+		PostUrl string `json:"postUrl"`
 	} `json:"slack"`
 }
 

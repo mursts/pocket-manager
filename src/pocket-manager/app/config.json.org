@@ -4,8 +4,6 @@
     "access_token": "",
   },
   "slack": {
-    "token": "",
-    "channel_id": "",
     "post_url": ""
   }
 }
