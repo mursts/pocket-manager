@@ -1,4 +1,4 @@
-package pocket_manager
+package main
 
 import (
 	"encoding/json"

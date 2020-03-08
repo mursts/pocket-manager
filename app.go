@@ -1,4 +1,4 @@
-package pocket_manager
+package main
 
 import (
 	"bytes"
@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 )
@@ -95,6 +96,11 @@ func postSlackHandle(w http.ResponseWriter, r *http.Request) {
 	wg.Wait()
 }
 
-func init() {
+func main() {
 	http.HandleFunc("/post", postSlackHandle)
+	port := os.Getenv("port")
+	if port == "" {
+		port = "8080"
+	}
+	http.ListenAndServe(fmt.Sprintf(":%s", port), nil)
 }
