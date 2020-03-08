@@ -25,4 +25,4 @@
 *.out
 
 config.json.org
-README.*
+README.md
