@@ -1,4 +1,4 @@
-package app
+package pocket_manager
 
 import (
 	"bytes"

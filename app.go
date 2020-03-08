@@ -1,25 +1,21 @@
-package app
+package pocket_manager
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"sync"
 	"time"
-
-	"google.golang.org/appengine"
-	"google.golang.org/appengine/log"
-	"google.golang.org/appengine/urlfetch"
 )
 
 var (
 	location, _ = time.LoadLocation("Asia/Tokyo")
 )
 
-func postToSlack(ctx context.Context, item Item, postUrl string) error {
+func postToSlack(item Item, postUrl string) error {
 
 	param := struct {
 		Text string `json:"text"`
@@ -37,7 +33,7 @@ func postToSlack(ctx context.Context, item Item, postUrl string) error {
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	client := urlfetch.Client(ctx)
+	client := http.DefaultClient
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
@@ -45,18 +41,16 @@ func postToSlack(ctx context.Context, item Item, postUrl string) error {
 	defer resp.Body.Close()
 
 	body, _ := ioutil.ReadAll(resp.Body)
-	log.Debugf(ctx, "%d: %s", item.ItemID, string(body))
+	log.Printf("%d: %s", item.ItemID, string(body))
 
 	return nil
 }
 
 func postSlackHandle(w http.ResponseWriter, r *http.Request) {
 
-	ctx := appengine.NewContext(r)
-
 	config, err := NewConfig()
 	if err != nil {
-		log.Errorf(ctx, "failed to load config. %v", err)
+		log.Printf("failed to load config. %v", err)
 		return
 	}
 
@@ -65,7 +59,7 @@ func postSlackHandle(w http.ResponseWriter, r *http.Request) {
 	until := time.Date(baseDate.Year(), baseDate.Month(), baseDate.Day(), 23, 59, 59, 0, location)
 
 	client := NewClient(config.Pocket.ConsumerKey, config.Pocket.AccessToken)
-	client.SetHttpClient(urlfetch.Client(ctx))
+	client.SetHttpClient(http.DefaultClient)
 
 	retrieve := &RetrieveReq{
 		State: "unread",
@@ -75,7 +69,7 @@ func postSlackHandle(w http.ResponseWriter, r *http.Request) {
 
 	var response RetrieveResponse
 	if err := client.Retrieve(retrieve, &response); err != nil {
-		log.Errorf(ctx, "failed to request to pocket. %v", err)
+		log.Printf("failed to request to pocket. %v", err)
 		return
 	}
 
@@ -85,7 +79,7 @@ func postSlackHandle(w http.ResponseWriter, r *http.Request) {
 
 		added := item.AddedAt()
 
-		log.Debugf(ctx, "%d\t%s\t%s\t%s", item.ItemID, item.ResolvedTitle, item.ResolvedURL, added)
+		log.Printf("%d\t%s\t%s\t%s", item.ItemID, item.ResolvedTitle, item.ResolvedURL, added)
 
 		if since.After(added) || until.Before(added) {
 			continue
@@ -94,7 +88,7 @@ func postSlackHandle(w http.ResponseWriter, r *http.Request) {
 		wg.Add(1)
 		go func(item Item, url string) {
 			defer wg.Done()
-			postToSlack(ctx, item, url)
+			postToSlack(item, url)
 		}(item, config.Slack.PostUrl)
 	}
 
