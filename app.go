@@ -1,7 +1,8 @@
-package main
+package pocket
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -16,7 +17,11 @@ var (
 	location, _ = time.LoadLocation("Asia/Tokyo")
 )
 
-func postToSlack(item Item, postUrl string) error {
+type PubSubMessage struct {
+	Data []byte `json:"data"`
+}
+
+func postToSlack(item Item, postURL string) error {
 
 	param := struct {
 		Text string `json:"text"`
@@ -28,7 +33,7 @@ func postToSlack(item Item, postUrl string) error {
 		return err
 	}
 
-	req, err := http.NewRequest("POST", postUrl, bytes.NewReader(paramBytes))
+	req, err := http.NewRequest("POST", postURL, bytes.NewReader(paramBytes))
 	if err != nil {
 		return err
 	}
@@ -47,19 +52,16 @@ func postToSlack(item Item, postUrl string) error {
 	return nil
 }
 
-func postSlackHandle(w http.ResponseWriter, r *http.Request) {
-
-	config, err := NewConfig()
-	if err != nil {
-		log.Printf("failed to load config. %v", err)
-		return
-	}
+func Run(ctx context.Context, m PubSubMessage) error {
+	consumerKey := os.Getenv("POCKET_CONSUMER_KEY")
+	accessToken := os.Getenv("POCKET_ACCESS_TOKEN")
+	slackPostURL := os.Getenv("SLACK_POST_URL")
 
 	baseDate := time.Now().UTC().In(location).AddDate(0, 0, -1)
 	since := time.Date(baseDate.Year(), baseDate.Month(), baseDate.Day(), 0, 0, 0, 0, location)
 	until := time.Date(baseDate.Year(), baseDate.Month(), baseDate.Day(), 23, 59, 59, 0, location)
 
-	client := NewClient(config.Pocket.ConsumerKey, config.Pocket.AccessToken)
+	client := NewClient(consumerKey, accessToken)
 	client.SetHttpClient(http.DefaultClient)
 
 	retrieve := &RetrieveReq{
@@ -71,7 +73,7 @@ func postSlackHandle(w http.ResponseWriter, r *http.Request) {
 	var response RetrieveResponse
 	if err := client.Retrieve(retrieve, &response); err != nil {
 		log.Printf("failed to request to pocket. %v", err)
-		return
+		return err
 	}
 
 	var wg sync.WaitGroup
@@ -90,17 +92,10 @@ func postSlackHandle(w http.ResponseWriter, r *http.Request) {
 		go func(item Item, url string) {
 			defer wg.Done()
 			postToSlack(item, url)
-		}(item, config.Slack.PostUrl)
+		}(item, slackPostURL)
 	}
 
 	wg.Wait()
-}
 
-func main() {
-	http.HandleFunc("/post", postSlackHandle)
-	port := os.Getenv("port")
-	if port == "" {
-		port = "8080"
-	}
-	http.ListenAndServe(fmt.Sprintf(":%s", port), nil)
+	return nil
 }

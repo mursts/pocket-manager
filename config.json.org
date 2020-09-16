@@ -1,9 +1,0 @@
-{
-  "pocket": {
-    "consumer_key": "",
-    "access_token": "",
-  },
-  "slack": {
-    "post_url": ""
-  }
-}
