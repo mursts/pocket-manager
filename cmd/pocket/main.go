@@ -2,10 +2,13 @@ package main
 
 import (
 	"context"
+	"os"
 
 	"github.com/mursts/pocket-manager"
 )
 
 func main() {
-	pocket.Run(context.Background(), pocket.PubSubMessage{})
+	if err := pocket.Run(context.Background(), pocket.PubSubMessage{}); err != nil {
+		os.Exit(1)
+	}
 }
