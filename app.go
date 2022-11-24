@@ -57,6 +57,11 @@ func Run(ctx context.Context, m PubSubMessage) error {
 	accessToken := os.Getenv("POCKET_ACCESS_TOKEN")
 	slackPostURL := os.Getenv("SLACK_POST_URL")
 
+	if consumerKey == "" || accessToken == "" {
+		log.Println("env POCKET_CONSUMER_KEY and POCKET_ACCESS_TOKEN are required")
+		return fmt.Errorf("env POCKET_CONSUMER_KEY and POCKET_ACCESS_TOKEN are required")
+	}
+
 	baseDate := time.Now().UTC().In(location).AddDate(0, 0, -1)
 	since := time.Date(baseDate.Year(), baseDate.Month(), baseDate.Day(), 0, 0, 0, 0, location)
 	until := time.Date(baseDate.Year(), baseDate.Month(), baseDate.Day(), 23, 59, 59, 0, location)
