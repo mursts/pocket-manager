@@ -88,11 +88,13 @@ func Run(ctx context.Context, m PubSubMessage) error {
 			continue
 		}
 
-		wg.Add(1)
-		go func(item Item, url string) {
-			defer wg.Done()
-			postToSlack(item, url)
-		}(item, slackPostURL)
+		if slackPostURL != "" {
+			wg.Add(1)
+			go func(item Item, url string) {
+				defer wg.Done()
+				postToSlack(item, url)
+			}(item, slackPostURL)
+		}
 	}
 
 	wg.Wait()
