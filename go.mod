@@ -1,3 +1,3 @@
 module github.com/mursts/pocket-manager
 
-go 1.14
+go 1.19
