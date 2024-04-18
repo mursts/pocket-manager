@@ -2,7 +2,7 @@
 
 [Pocket](getpocket.com) の積読解消のために前日ストックしたものをSlackに通知します
 
-## Deplog
+## Deploy
 
 ```sh
 export POCKET_CONSUMER_KEY=xxxxxx
