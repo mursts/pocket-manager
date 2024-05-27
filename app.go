@@ -13,16 +13,13 @@ import (
 	"time"
 )
 
-var (
-	location, _ = time.LoadLocation("Asia/Tokyo")
-)
+var location, _ = time.LoadLocation("Asia/Tokyo")
 
 type PubSubMessage struct {
 	Data []byte `json:"data"`
 }
 
 func postToSlack(item Item, postURL string) error {
-
 	param := struct {
 		Text string `json:"text"`
 	}{
