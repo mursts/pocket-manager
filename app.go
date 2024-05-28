@@ -75,7 +75,7 @@ func Run(ctx context.Context, m PubSubMessage) error {
 	var response RetrieveResponse
 	if err := client.Retrieve(retrieve, &response); err != nil {
 		log.Printf("failed to request to pocket. %v", err)
-		return err
+		// return err
 	}
 
 	var wg sync.WaitGroup
